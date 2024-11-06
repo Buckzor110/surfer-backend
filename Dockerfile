@@ -24,7 +24,7 @@ WORKDIR /build
 
 COPY app/ app/
 RUN gradle build --no-daemon
-RUN mv build/libs/*SNAPSHOT.jar app.jar
+RUN mv app/build/libs/app.jar app.jar
 
 
 ################################################################################

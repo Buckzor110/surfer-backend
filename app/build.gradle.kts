@@ -41,7 +41,7 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClass.set("surfer.backend.App")
+    mainClass.set("surfer.backend.Application")
 }
 
 tasks.named<Test>("test") {
