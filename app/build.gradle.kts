@@ -27,6 +27,16 @@ dependencies {
 
     // This dependency is used by the application.
     implementation("com.google.guava:guava:31.1-jre")
+
+    compileOnly("org.projectlombok:lombok:1.18.34")
+    annotationProcessor("org.projectlombok:lombok:1.18.34")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa:3.3.5")
+    implementation("org.springframework.boot:spring-boot-starter-security:3.3.5")
+    implementation("io.jsonwebtoken:jjwt-api:0.11.5")
+    implementation("io.jsonwebtoken:jjwt-impl:0.11.5")
+    implementation("io.jsonwebtoken:jjwt-jackson:0.11.5")
+
+    implementation("org.postgresql:postgresql:42.6.0")
 }
 
 application {
