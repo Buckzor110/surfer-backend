@@ -22,7 +22,7 @@ FROM deps as package
 
 WORKDIR /build
 
-COPY src/ src/
+COPY app/ app/
 RUN gradle build --no-daemon
 RUN mv build/libs/*SNAPSHOT.jar app.jar
 
