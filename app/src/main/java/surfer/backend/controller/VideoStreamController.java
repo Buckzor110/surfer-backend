@@ -2,32 +2,66 @@ package surfer.backend.controller;
 
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.List;
+import java.util.Random;
 
 @RestController
 @RequestMapping("/video")
 public class VideoStreamController {
 
-    // Указываем путь к видеофайлу
-    private static final String VIDEO_PATH = "" ; // Путь к вашему видеофайлу
+    private final S3Client s3Client;
+
+    @Value("${yandex.s3.bucket}")
+    private String bucketName;
+
+
+    private static final String VIDEO_PATH = "" ;
+
+    public VideoStreamController(S3Client s3Client) {
+        this.s3Client = s3Client;
+    }
 
     @GetMapping("/stream")
     public void streamVideo(HttpServletResponse response) throws IOException {
         File videoFile = new File(VIDEO_PATH);
 
-        // Проверяем, существует ли файл
-        if (!videoFile.exists()) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Video not found");
-            return;
-        }
+        ListObjectsV2Request listRequest = ListObjectsV2Request.builder()
+                .bucket(bucketName)
+                .build();
+
+        ListObjectsV2Response listResponse = s3Client.listObjectsV2(listRequest);
+        List<S3Object> objects = listResponse.contents();
+
+        System.out.println(objects);
+
+        Random random = new Random();
+        S3Object randomObject = objects.get(random.nextInt(objects.size()));
+
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(randomObject.key())
+                .build();
+
+//        if (!videoFile.exists()) {
+//            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Video not found");
+//            return;
+//        }
 
         // Устанавливаем тип контента в ответе как видео
         response.setContentType(String.valueOf(MediaType.valueOf("video/mp4")));
@@ -35,7 +69,7 @@ public class VideoStreamController {
         response.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(videoFile.length()));
 
         // Получаем поток для чтения видеофайла
-        try (FileInputStream videoStream = new FileInputStream(videoFile);
+        try (ResponseInputStream<?> videoStream = s3Client.getObject(getObjectRequest);
              ServletOutputStream outStream = response.getOutputStream()) {
 
             byte[] buffer = new byte[1024 * 8]; // Буфер для передачи данных
