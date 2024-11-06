@@ -30,16 +30,12 @@ public class VideoStreamController {
     @Value("${yandex.s3.bucket}")
     private String bucketName;
 
-
-    private static final String VIDEO_PATH = "" ;
-
     public VideoStreamController(S3Client s3Client) {
         this.s3Client = s3Client;
     }
 
     @GetMapping("/stream")
     public void streamVideo(HttpServletResponse response) throws IOException {
-        File videoFile = new File(VIDEO_PATH);
 
         ListObjectsV2Request listRequest = ListObjectsV2Request.builder()
                 .bucket(bucketName)
@@ -58,15 +54,11 @@ public class VideoStreamController {
                 .key(randomObject.key())
                 .build();
 
-//        if (!videoFile.exists()) {
-//            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Video not found");
-//            return;
-//        }
-
+        var object = s3Client.getObject(getObjectRequest);
         // Устанавливаем тип контента в ответе как видео
         response.setContentType(String.valueOf(MediaType.valueOf("video/mp4")));
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"video.mp4\"");
-        response.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(videoFile.length()));
+        response.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(object.response().contentLength()));
 
         // Получаем поток для чтения видеофайла
         try (ResponseInputStream<?> videoStream = s3Client.getObject(getObjectRequest);
