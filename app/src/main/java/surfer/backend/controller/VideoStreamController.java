@@ -44,8 +44,6 @@ public class VideoStreamController {
         ListObjectsV2Response listResponse = s3Client.listObjectsV2(listRequest);
         List<S3Object> objects = listResponse.contents();
 
-        System.out.println(objects);
-
         Random random = new Random();
         S3Object randomObject = objects.get(random.nextInt(objects.size()));
 
@@ -55,19 +53,17 @@ public class VideoStreamController {
                 .build();
 
         var object = s3Client.getObject(getObjectRequest);
-        // Устанавливаем тип контента в ответе как видео
+
         response.setContentType(String.valueOf(MediaType.valueOf("video/mp4")));
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"video.mp4\"");
         response.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(object.response().contentLength()));
 
-        // Получаем поток для чтения видеофайла
         try (ResponseInputStream<?> videoStream = s3Client.getObject(getObjectRequest);
              ServletOutputStream outStream = response.getOutputStream()) {
 
-            byte[] buffer = new byte[1024 * 8]; // Буфер для передачи данных
+            byte[] buffer = new byte[1024 * 8];
             int bytesRead;
 
-            // Читаем файл и передаем его в ответ
             while ((bytesRead = videoStream.read(buffer)) != -1) {
                 outStream.write(buffer, 0, bytesRead);
                 outStream.flush();
