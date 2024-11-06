@@ -30,7 +30,7 @@ public class YandexS3Config {
         return S3Client.builder()
                 .endpointOverride(URI.create(endpoint))
                 .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
-                .region(Region.US_EAST_1) // Yandex doesn’t enforce a specific region
+                .region(Region.US_EAST_1)
                 .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
                 .build();
     }
