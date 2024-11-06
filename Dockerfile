@@ -12,7 +12,7 @@ COPY --chmod=0755 gradlew gradlew
 COPY gradle/ gradle/
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
-COPY build.gradle settings.gradle ./
+COPY settings.gradle.kts ./
 RUN gradle dependencies --no-daemon
 
 ################################################################################
