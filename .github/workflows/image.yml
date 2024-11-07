@@ -45,6 +45,7 @@ jobs:
         uses: yc-actions/yc-coi-deploy@v2
         env:
           IMAGE_URL: cr.yandex/crp4iqdebgpbm796fhsp/meeting-surfer:${{ github.sha }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
         with:
           yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
           folder-id: ${{ secrets.YC_FOLDER_ID }}
