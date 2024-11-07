@@ -9,9 +9,13 @@ import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Service
 public class VideoStreamService {
+
+    private static final Logger LOGGER = Logger.getLogger(VideoStreamService.class.getName());
 
     private final S3StorageService s3StorageService;
     private final int countVideos;
@@ -32,10 +36,16 @@ public class VideoStreamService {
             byte[] buffer = new byte[1024 * 8];
             int bytesRead = object.read(buffer);
 
+
             while (bytesRead != -1) {
-                outStream.write(buffer, 0, bytesRead);
-                outStream.flush();
-                bytesRead = object.read(buffer);
+                try {
+                    outStream.write(buffer, 0, bytesRead);
+                    outStream.flush();
+                    bytesRead = object.read(buffer);
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Client disconnected: " + e.getMessage());
+                    break;
+                }
             }
         } finally {
             object.close();
