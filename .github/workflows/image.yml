@@ -30,22 +30,23 @@ jobs:
         uses: yc-actions/yc-cr-login@v2
         with:
           yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
-#
-#      - name: Build, tag, and push image to Yandex Cloud Container Registry
-#        env:
-#          CR_REGISTRY: crp4iqdebgpbm796fhsp
-#          CR_REPOSITORY: meeting-surfer
-#          IMAGE_TAG: ${{ github.sha }}
-#        run: |
-#          docker build -t cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:$IMAGE_TAG .
-#          docker push cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:$IMAGE_TAG
+
+      - name: Build, tag, and push image to Yandex Cloud Container Registry
+        env:
+          CR_REGISTRY: crp4iqdebgpbm796fhsp
+          CR_REPOSITORY: meeting-surfer
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:$IMAGE_TAG .
+          docker push cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:$IMAGE_TAG
 
       - name: Deploy to yCloud
         id: deploy-coi
         uses: yc-actions/yc-coi-deploy@v2
         env:
-          IMAGE_URL: cr.yandex/crp4iqdebgpbm796fhsp/meeting-surfer:3dd34c25c5b53ab9f03dfb2c0b4237985eff8990
-          SSH_KEY: ${{ secrets.SSH_KEY }}
+          CR_REGISTRY: crp4iqdebgpbm796fhsp
+          CR_REPOSITORY: meeting-surfer
+          IMAGE_TAG: ${{ github.sha }}
         with:
           yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
           folder-id: ${{ secrets.YC_FOLDER_ID }}
