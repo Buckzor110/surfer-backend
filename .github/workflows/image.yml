@@ -44,9 +44,7 @@ jobs:
         id: deploy-coi
         uses: yc-actions/yc-coi-deploy@v2
         env:
-          CR_REGISTRY: crp4iqdebgpbm796fhsp
-          CR_REPOSITORY: meeting-surfer
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_URL: cr.yandex/crp4iqdebgpbm796fhsp/meeting-surfer:${{ github.sha }}
         with:
           yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
           folder-id: ${{ secrets.YC_FOLDER_ID }}
