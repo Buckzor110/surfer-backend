@@ -22,8 +22,8 @@ public class VideoStreamService {
     }
 
     public void streamVideo(HttpServletResponse response) throws IOException {
+        ResponseInputStream<GetObjectResponse> object = s3StorageService.getRandomVideo(countVideos);
         try (
-             ResponseInputStream<GetObjectResponse> object = s3StorageService.getRandomVideo(countVideos);
              ServletOutputStream outStream = response.getOutputStream()
         ) {
             response.setContentType(String.valueOf(MediaType.valueOf("video/mp4")));
@@ -37,6 +37,8 @@ public class VideoStreamService {
                 outStream.flush();
                 bytesRead = object.read(buffer);
             }
+        } finally {
+            object.close();
         }
     }
 }
