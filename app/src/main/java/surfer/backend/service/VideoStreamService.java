@@ -6,6 +6,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 
 import java.io.IOException;
 
@@ -13,8 +14,7 @@ import java.io.IOException;
 public class VideoStreamService {
 
     private final S3StorageService s3StorageService;
-
-    private int countVideos;
+    private final int countVideos;
 
     VideoStreamService(S3StorageService s3StorageService) {
         this.s3StorageService = s3StorageService;
@@ -22,26 +22,21 @@ public class VideoStreamService {
     }
 
     public void streamVideo(HttpServletResponse response) throws IOException {
-        var object = s3StorageService.getRandomVideo(countVideos);
-
-        response.setContentType(String.valueOf(MediaType.valueOf("video/mp4")));
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"video.mp4\"");
-        response.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(object.response().contentLength()));
-        ResponseInputStream<?> videoStream = object;
-        try (ServletOutputStream outStream = response.getOutputStream()) {
-
+        try (
+             ResponseInputStream<GetObjectResponse> object = s3StorageService.getRandomVideo(countVideos);
+             ServletOutputStream outStream = response.getOutputStream()
+        ) {
+            response.setContentType(String.valueOf(MediaType.valueOf("video/mp4")));
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"video.mp4\"");
+            response.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(object.response().contentLength()));
             byte[] buffer = new byte[1024 * 8];
-            int bytesRead = videoStream.read(buffer);
+            int bytesRead = object.read(buffer);
 
             while (bytesRead != -1) {
                 outStream.write(buffer, 0, bytesRead);
                 outStream.flush();
-                bytesRead = videoStream.read(buffer);
-                if (bytesRead == -1 ) {
-                    videoStream = s3StorageService.getRandomVideo(countVideos);
-                }
+                bytesRead = object.read(buffer);
             }
-
         }
     }
 }
